@@ -915,7 +915,10 @@ class LlavaMetaForCausalLM(ABC):
             else:
                 raise ValueError(f"Unsupported media type: {name}")
         # Tokenize the conversation
-        input_ids = tokenize_conversation(conversation, self.tokenizer, add_generation_prompt=True).cuda().unsqueeze(0)
+        # input_ids = tokenize_conversation(conversation, self.tokenizer, add_generation_prompt=True).cuda().unsqueeze(0)
+        input_ids = tokenize_conversation(conversation, self.tokenizer, add_generation_prompt=True)
+        input_ids = input_ids.to(self.device)  # new, cuda, mps
+        input_ids = input_ids.unsqueeze(0)
 
         # Set up the generation config
         generation_config = generation_config or self.default_generation_config

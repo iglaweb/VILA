@@ -17,8 +17,6 @@ from transformers.utils import logging
 
 from llava.model.multimodal_encoder.intern.configuration_intern_vit import InternVisionConfig
 
-from .flash_attention import FlashAttention
-
 has_flash_attn = True
 
 
@@ -321,6 +319,7 @@ class InternAttention(nn.Module):
             self.k_norm = InternRMSNorm(self.embed_dim, eps=config.layer_norm_eps)
 
         if self.use_flash_attn:
+            from .flash_attention import FlashAttention  # import only if FA enabled
             self.inner_attn = FlashAttention(attention_dropout=config.attention_dropout)
         self.proj = nn.Linear(self.embed_dim, self.embed_dim)
 

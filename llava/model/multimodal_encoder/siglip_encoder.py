@@ -20,15 +20,17 @@ from transformers import PretrainedConfig, SiglipImageProcessor
 from llava.model.multimodal_encoder.vision_encoder import VisionTower, VisionTowerDynamicS2, VisionTowerS2
 
 from .siglip import SiglipVisionModel
+from transformers.modeling_flash_attention_utils import is_flash_attn_2_available
 
 
 class SiglipVisionTower(VisionTower):
     def __init__(self, model_name_or_path: str, config: PretrainedConfig) -> None:
         super().__init__(model_name_or_path, config)
         # TODO(ligengl): why pass config here leading to errors?
+        # transformers support FA2 and SDPA for SigLip https://github.com/huggingface/transformers/pull/31499
         self.vision_tower = SiglipVisionModel.from_pretrained(
             model_name_or_path,
-            attn_implementation="flash_attention_2",
+            attn_implementation="flash_attention_2" if is_flash_attn_2_available() else "sdpa",
             torch_dtype=eval(config.model_dtype),
         )
         self.image_processor = SiglipImageProcessor.from_pretrained(model_name_or_path)
@@ -40,7 +42,7 @@ class SiglipVisionTowerS2(VisionTowerS2):
         super().__init__(model_name_or_path, config)
         self.vision_tower = SiglipVisionModel.from_pretrained(
             model_name_or_path,
-            attn_implementation="flash_attention_2",
+            attn_implementation="flash_attention_2" if is_flash_attn_2_available() else "sdpa",
             torch_dtype=eval(config.model_dtype),
         )
         self.image_processor = SiglipImageProcessor.from_pretrained(model_name_or_path)
@@ -54,7 +56,7 @@ class SiglipVisionTowerDynamicS2(VisionTowerDynamicS2):
         super().__init__(model_name_or_path, config)
         self.vision_tower = SiglipVisionModel.from_pretrained(
             model_name_or_path,
-            attn_implementation="flash_attention_2",
+            attn_implementation="flash_attention_2" if is_flash_attn_2_available() else "sdpa",
             torch_dtype=eval(config.model_dtype),
         )
         self.image_processor = SiglipImageProcessor.from_pretrained(model_name_or_path)
